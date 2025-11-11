@@ -1,0 +1,106 @@
+﻿@model IEnumerable<ClinicaBemEstar.Models.Specialty>
+
+@{
+    ViewData["Title"] = "Painel Inicial";
+}
+
+<div class="row">
+
+    <div class="col-md-3 col-lg-2">
+        <h4>Painel Inicial</h4>
+        <hr />
+        <h5 class="text-muted" style="font-size: 0.9rem;">DESCUBRA</h5>
+
+        <ul class="nav flex-column nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active" asp-action="Index" asp-controller="Home">
+                    <i class="bi bi-house-door-fill me-2"></i> Início
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-action="MySchedule" asp-controller="Appointment">
+                    <i class="bi bi-calendar-check me-2"></i> Minha Agenda
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-action="MyBookings" asp-controller="Appointment">
+                    <i class="bi bi-clock-history me-2"></i> Histórico
+                </a>
+            </li>
+            <li class="nav-item mt-3">
+                <h5 class="text-muted" style="font-size: 0.9rem;">OUTROS</h5>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="#">
+                    <i class="bi bi-info-circle me-2"></i> Sobre nós
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="#">
+                    <i class="bi bi-telephone me-2"></i> Contato Profissional
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-md-9 col-lg-10">
+
+        <h2>O que você Procura?</h2>
+        <p class="text-muted">Selecione Seu Atendimento para agendar a consulta</p>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card shadow-sm text-decoration-none text-dark h-100">
+                    <img src="~/images/presencial.jpg" class="card-img-top" alt="Atendimento Presencial" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">Presencial</h5>
+                        <p class="card-text text-muted">Atendimento Moderado</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm text-decoration-none text-dark h-100">
+                    <img src="~/images/virtual.jpg" class="card-img-top" alt="Atendimento Virtual" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">Virtual</h5>
+                        <p class="card-text text-muted">Atendimento Lento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mt-4">Consultas disponíveis</h2>
+        <hr />
+
+        <div class="row g-4">
+            @if (!Model.Any())
+            {
+                <div class="col">
+                    <div class="alert alert-info">Nenhuma especialidade cadastrada no momento.</div>
+                </div>
+            }
+
+            @foreach (var specialty in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+
+                        @{
+                            var imageUrl = !string.IsNullOrEmpty(specialty.ImageUrl)
+                            ? specialty.ImageUrl
+                            : $"https://via.placeholder.com/300x150?text={System.Net.WebUtility.UrlEncode(specialty.Name)}";
+                        }
+                        <img src="@imageUrl" class="card-img-top" alt="@specialty.Name" style="height: 150px; object-fit: cover;">
+
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@specialty.Name</h5>
+                            <p class="card-text text-muted small">Encontre especialistas em @specialty.Name.</p>
+                            <a asp-action="Doctors" asp-route-id="@specialty.Id" class="btn btn-primary btn-sm stretched-link">Ver Médicos</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

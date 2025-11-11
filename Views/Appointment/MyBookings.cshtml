@@ -1,0 +1,200 @@
+﻿@model IEnumerable<ClinicaBemEstar.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Histórico de Agendamentos";
+    var patientName = ViewBag.PatientName as string;
+
+    var now = DateTime.Now;
+    var futureAppointments = Model
+        .Where(a => a.StartTime > now && (a.Status == "Pending" || a.Status == null))
+        .OrderBy(a => a.StartTime)
+        .ToList();
+
+    var completedAppointments = Model
+        .Where(a => a.Status == "Completed")
+        .OrderByDescending(a => a.StartTime)
+        .ToList();
+
+    var pastPendingAppointments = Model
+        .Where(a => a.StartTime <= now && (a.Status == "Pending" || a.Status == null))
+        .OrderByDescending(a => a.StartTime)
+        .ToList();
+
+    var canceledAppointments = Model
+        .Where(a => a.Status == "Canceled")
+        .OrderByDescending(a => a.StartTime)
+        .ToList();
+}
+
+@functions {
+    public static Microsoft.AspNetCore.Html.IHtmlContent GetStatusBadge(string? status, DateTime startTime)
+    {
+        var statusText = status ?? "Pendente";
+        var statusClass = "bg-primary"; 
+
+        if (statusText == "Completed")
+        {
+            statusClass = "bg-success";
+            statusText = "Concluído";
+        }
+        else if (statusText == "Canceled")
+        {
+            statusClass = "bg-danger";
+            statusText = "Cancelado";
+        }
+        else if (startTime <= DateTime.Now) 
+        {
+            statusClass = "bg-secondary";
+            statusText = "Aguardando Confirmação";
+        }
+        else 
+        {
+            statusText = "Pendente";
+        }
+
+        return new Microsoft.AspNetCore.Html.HtmlString($"<span class=\"badge {statusClass}\">{statusText}</span>");
+    }
+}
+
+<h1>Histórico de Agendamentos</h1>
+<p class="lead">Olá, @patientName. Aqui estão todos os seus agendamentos.</p>
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
+}
+
+<h2 class="mt-4">Próximos Agendamentos</h2>
+@if (!futureAppointments.Any())
+{
+    <div class="alert alert-secondary">Você não possui agendamentos futuros.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Médico</th>
+                <th>Status</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in futureAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status, appt.StartTime)</td>
+                    <td>
+                        <form asp-action="Cancel" asp-route-id="@appt.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja cancelar este agendamento?');">
+                                Cancelar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2 class="mt-4">Histórico de Atendimentos Concluídos</h2>
+@if (!completedAppointments.Any())
+{
+    <div class="alert alert-secondary">Você não possui atendimentos concluídos.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Médico</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in completedAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status, appt.StartTime)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2 class="mt-4">Atendimentos Passados (Aguardando Confirmação)</h2>
+@if (!pastPendingAppointments.Any())
+{
+    <div class="alert alert-secondary">Nenhum atendimento passado aguardando confirmação.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Médico</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in pastPendingAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status, appt.StartTime)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+<h2 class="mt-4">Agendamentos Cancelados</h2>
+@if (!canceledAppointments.Any())
+{
+    <div class="alert alert-secondary">Você não possui agendamentos cancelados.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Médico</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in canceledAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status, appt.StartTime)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

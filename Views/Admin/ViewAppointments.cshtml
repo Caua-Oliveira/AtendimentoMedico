@@ -1,0 +1,212 @@
+@model IEnumerable<ClinicaBemEstar.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Todos os Agendamentos";
+
+
+    // Filter the appointments into different lists
+    var now = DateTime.Now;
+    var futureAppointments = Model
+        .Where(a => a.StartTime > now && (a.Status == "Pending" || a.Status == null))
+        .OrderBy(a => a.StartTime)
+        .ToList();
+
+    var completedAppointments = Model
+        .Where(a => a.Status == "Completed")
+        .OrderByDescending(a => a.StartTime)
+        .ToList();
+
+    var canceledAppointments = Model
+        .Where(a => a.Status == "Canceled")
+        .OrderByDescending(a => a.StartTime)
+        .ToList();
+
+    var pastPendingAppointments = Model
+        .Where(a => a.StartTime <= now && (a.Status == "Pending" || a.Status == null))
+        .OrderByDescending(a => a.StartTime)
+        .ToList();
+}
+
+<h1>Todos os Agendamentos</h1>
+<a asp-action="Index" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> Voltar ao Painel</a>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Não há agendamentos registrados.</div>
+}
+
+@functions {
+    public static Microsoft.AspNetCore.Html.IHtmlContent GetStatusBadge(string? status)
+    {
+        var statusText = status ?? "Pendente";
+        var statusClass = "bg-primary"; // Default to pending
+
+        if (statusText == "Completed") { statusClass = "bg-success"; statusText = "Concluído"; }
+        else if (statusText == "Canceled") { statusClass = "bg-danger"; statusText = "Cancelado"; }
+        else { statusText = "Pendente"; }
+
+        return new Microsoft.AspNetCore.Html.HtmlString($"<span class=\"badge {statusClass}\">{statusText}</span>");
+    }
+}
+
+<h2 class="mt-4">Agendamentos Futuros (Pendentes)</h2>
+@if (!futureAppointments.Any())
+{
+    <div class="alert alert-secondary">Nenhum agendamento futuro encontrado.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in futureAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Patient?.Name</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status)</td>
+                    <td>
+                        <form asp-action="CompleteAppointment" asp-route-id="@appt.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success btn-sm" title="Marcar como Concluída">
+                                <i class="bi bi-check-lg"></i> Concluir
+                            </button>
+                        </form>
+
+                        <form asp-action="CancelAppointment" asp-route-id="@appt.Id" method="post" class="d-inline ms-1">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm" title="Cancelar Agendamento"
+                            onclick="return confirm('Tem certeza que deseja cancelar este agendamento?');">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2 class="mt-4">Agendamentos Passados (Pendentes / Não Compareceu)</h2>
+@if (!pastPendingAppointments.Any())
+{
+    <div class="alert alert-secondary">Nenhum agendamento pendente encontrado no passado.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in pastPendingAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Patient?.Name</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status)</td>
+                    <td>
+                        <form asp-action="CompleteAppointment" asp-route-id="@appt.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success btn-sm" title="Marcar como Concluída">
+                                <i class="bi bi-check-lg"></i> Concluir
+                            </button>
+                        </form>
+
+                        <form asp-action="CancelAppointment" asp-route-id="@appt.Id" method="post" class="d-inline ms-1">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm" title="Cancelar Agendamento"
+                            onclick="return confirm('Tem certeza que deseja cancelar este agendamento?');">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2 class="mt-4">Agendamentos Concluídos</h2>
+@if (!completedAppointments.Any())
+{
+    <div class="alert alert-secondary">Nenhum agendamento concluído.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in completedAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Patient?.Name</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2 class="mt-4">Agendamentos Cancelados</h2>
+@if (!canceledAppointments.Any())
+{
+    <div class="alert alert-secondary">Nenhum agendamento cancelado.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in canceledAppointments)
+            {
+                <tr>
+                    <td>@appt.StartTime.ToString("dd/MM/yyyy")</td>
+                    <td>@appt.StartTime.ToString("HH:mm")</td>
+                    <td>@appt.Patient?.Name</td>
+                    <td>@appt.Doctor?.Name</td>
+                    <td>@GetStatusBadge(appt.Status)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

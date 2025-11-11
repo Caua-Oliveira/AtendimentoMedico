@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Painel Administrativo";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Painel Administrativo</h1>
+    <p>Gerencie os dados da Clínica Bem-Estar.</p>
+</div>
+
+<div class="list-group mt-5">
+    <a asp-action="Specialties" class="list-group-item list-group-item-action">
+        <i class="bi bi-bookmark-star-fill"></i> Gerenciar Especialidades
+    </a>
+    <a asp-action="Doctors" class="list-group-item list-group-item-action">
+        <i class="bi bi-person-badge"></i> Gerenciar Médicos
+    </a>
+    <a asp-action="ViewAppointments" class="list-group-item list-group-item-action">
+        <i class="bi bi-calendar-check"></i> Visualizar Agendamentos
+    </a>
+</div>

@@ -1,0 +1,35 @@
+@model IEnumerable<ClinicaBemEstar.Models.Doctor>
+
+@{
+    ViewData["Title"] = $"Médicos - {ViewBag.SpecialtyName}";
+}
+
+<a asp-action="Index" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> Voltar para Especialidades</a>
+
+<h2 class="mb-4">Especialistas em @ViewBag.SpecialtyName</h2>
+
+<div class="row">
+    @if (!Model.Any())
+    {
+            <div class="col">
+                <p>Não há médicos cadastrados para esta especialidade no momento.</p>
+            </div>
+    }
+    else
+    {
+        @foreach (var doctor in Model)
+        {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <h5 class="card-title">@doctor.Name</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">@doctor.Crm</h6>
+                                <p class="card-text">Agende uma consulta para cuidar da sua saúde.</p>
+                                <a asp-controller="Appointment" asp-action="Book" asp-route-doctorId="@doctor.Id" class="btn btn-success">Agendar Consulta</a>
+                            </div>
+                        </div>
+                    </div>
+        }
+    }
+</div>

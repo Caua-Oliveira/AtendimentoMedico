@@ -1,0 +1,202 @@
+﻿@model IEnumerable<ClinicaBemEstar.Models.Appointment>
+@using System.Security.Claims
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Minha Agenda";
+    var user = User;
+    var patientName = user.FindFirstValue(ClaimTypes.GivenName);
+
+    var totalAppointments = Model.Count();
+    var finalizedAppointments = Model.Count(a => a.Status == "Completed");
+    var canceledAppointments = Model.Count(a => a.Status == "Canceled");
+
+    var today = DateTime.Today;
+    var culture = new CultureInfo("pt-BR");
+    int diff = (7 + (int)today.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+    var startOfWeek = today.AddDays(-1 * diff);
+
+    var timeSlots = new List<TimeSpan>();
+    for (var time = new TimeSpan(8, 0, 0); time <= new TimeSpan(18, 0, 0); time = time.Add(TimeSpan.FromHours(1)))
+    {
+        timeSlots.Add(time);
+    }
+}
+
+<style>
+    .schedule-container {
+        display: flex;
+        gap: 2rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .sidebar {
+        flex: 0 0 240px;
+        color: #333;
+    }
+
+    .sidebar-header {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-profile {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .user-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #adb5bd;
+    }
+
+    .user-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .stats {
+        list-style: none;
+        padding: 0;
+    }
+
+        .stats li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stats .stat-value {
+            font-weight: bold;
+            color: #888;
+        }
+
+    .main-content {
+        flex: 1;
+    }
+
+        .main-content h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+    .calendar-grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+        .calendar-grid th, .calendar-grid td {
+            border: 1px solid #dee2e6;
+            padding: 0.5rem;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .calendar-grid thead th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .calendar-grid tbody th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            width: 120px;
+        }
+
+        .calendar-grid tbody td {
+            height: 60px;
+        }
+
+    .appointment-scheduled {
+        background-color: #e7f5ff;
+        color: #1c7ed6;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        padding: 4px;
+    }
+</style>
+
+<div class="schedule-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">Agenda do Usuário</div>
+        <div class="user-profile">
+            <div class="user-avatar">?</div>
+            <div class="user-name">@patientName</div>
+        </div>
+        <ul class="stats">
+            <li>
+                <span>Agendamentos</span>
+                <span class="stat-value">@totalAppointments</span>
+            </li>
+            <li>
+                <span>Finalizados</span>
+                <span class="stat-value">@finalizedAppointments</span>
+            </li>
+            <li>
+                <span>Cancelados</span>
+                <span class="stat-value">@canceledAppointments</span>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <h1>Agenda</h1>
+
+        <table class="calendar-grid">
+            <thead>
+                <tr>
+                    <th></th>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var day = startOfWeek.AddDays(i);
+                        <th>
+                            <div>@culture.TextInfo.ToTitleCase(day.ToString("dddd", culture))</div>
+                            <div class="text-muted small">@day.ToString("dd/MM")</div>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var time in timeSlots)
+                {
+                    <tr>
+                        <th>@time.ToString(@"hh\:mm") - @time.Add(TimeSpan.FromHours(1)).ToString(@"hh\:mm")</th>
+
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var currentDay = startOfWeek.AddDays(i);
+                            var slotStart = currentDay.Add(time);
+                            var slotEnd = slotStart.AddHours(1);
+
+                            var appointment = Model.FirstOrDefault(a =>
+                            a.Status == "Pending" &&
+                            a.StartTime >= slotStart && a.StartTime < slotEnd);
+
+                            <td>
+                                @if (appointment != null)
+                                {
+                                    <div class="appointment-scheduled" title="Com @appointment.Doctor?.Name">
+                                        AGENDADO
+                                    </div>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </main>
+</div>

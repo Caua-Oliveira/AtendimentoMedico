@@ -1,0 +1,121 @@
+@model IEnumerable<ClinicaBemEstar.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Gerenciar Médicos";
+    var specialties = ViewBag.Specialties as IEnumerable<ClinicaBemEstar.Models.Specialty> ?? new List<ClinicaBemEstar.Models.Specialty>();
+}
+
+<h1>Gerenciar Médicos</h1>
+<a asp-action="Index" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> Voltar ao Painel</a>
+
+
+<div class="card mb-4">
+    <div class="card-header">
+        Adicionar Novo Médico
+    </div>
+    <div class="card-body">
+        <form asp-action="AddDoctor" method="post" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="Name" class="form-control" placeholder="Nome do Médico" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="Crm" class="form-control" placeholder="CRM" required>
+            </div>
+            <div class="col-md-3">
+                <select name="SpecialtyId" class="form-select" required>
+                    <option value="">Selecione a Especialidade</option>
+                    @foreach (var spec in specialties)
+                    {
+                        <option value="@spec.Id">@spec.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit">Adicionar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>CRM</th>
+            <th>Especialidade</th>
+            <th style="width: 150px;">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var specialtyName = item.Specialty?.Name ?? "N/A";
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Crm</td>
+                <td>@specialtyName</td>
+                <td>
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal-@item.Id">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <div class="modal fade" id="editModal-@item.Id" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form asp-action="EditDoctor" method="post">
+                            <input type="hidden" name="Id" value="@item.Id" />
+                            <div class="modal-header">
+                                <h5 class="modal-title">Editar Médico</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3"><label>Nome</label><input type="text" name="Name" value="@item.Name" class="form-control" required /></div>
+                                <div class="mb-3"><label>CRM</label><input type="text" name="Crm" value="@item.Crm" class="form-control" required /></div>
+                                <div class="mb-3">
+                                    <label>Especialidade</label>
+                                    <select name="SpecialtyId" class="form-select" required>
+                                        @foreach (var spec in specialties)
+                                        {
+                                            <option value="@spec.Id" selected="@(spec.Id == item.SpecialtyId)">@spec.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form asp-action="DeleteDoctor" asp-route-id="@item.Id" method="post">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirmar Exclusão</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Tem certeza que deseja excluir o(a) médico(a) "@item.Name"?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não</button>
+                                <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </tbody>
+</table>

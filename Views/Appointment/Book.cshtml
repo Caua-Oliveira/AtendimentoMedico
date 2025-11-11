@@ -1,0 +1,55 @@
+@model ClinicaBemEstar.Models.Appointment
+
+@{
+    ViewData["Title"] = "Agendar Consulta";
+    var availableSlots = ViewBag.AvailableSlots as Dictionary<DateTime, List<TimeSpan>>;
+}
+
+<h2>Agendar Consulta com @ViewBag.DoctorName</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Book">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            <input type="hidden" asp-for="DoctorId" value="@ViewBag.DoctorId" />
+
+            <div class="mb-3">
+                <label class="form-label">Selecione um Horário</label>
+                <div class="p-3 border rounded" style="max-height: 400px; overflow-y: auto;">
+                    @if (availableSlots == null || !availableSlots.Any())
+                    {
+                        <p>Não há horários disponíveis para este médico nos próximos dias.</p>
+                    }
+                    else
+                    {
+                        @foreach (var day in availableSlots)
+                        {
+                            <h5>@day.Key.ToString("dd/MM/yyyy") - @day.Key.ToString("dddd", new System.Globalization.CultureInfo("pt-BR"))</h5>
+                            <div class="d-flex flex-wrap">
+                                @foreach (var time in day.Value)
+                                {
+                                    var slotDateTime = day.Key.Add(time);
+                                    <div class="p-1">
+                                        <input type="radio" class="btn-check" name="StartTime" id="time-@slotDateTime.Ticks" value="@slotDateTime" />
+                                        <label class="btn btn-outline-primary" for="time-@slotDateTime.Ticks">@time.ToString(@"hh\:mm")</label>
+                                    </div>
+                                }
+                            </div>
+                            <hr />
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <input type="submit" value="Confirmar Agendamento" class="btn btn-success" />
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

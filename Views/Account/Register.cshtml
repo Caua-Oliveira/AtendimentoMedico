@@ -1,0 +1,117 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Abra uma conta";
+}
+
+<style>
+    .auth-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+        background-color: #fff;
+    }
+
+    .auth-box {
+        width: 100%;
+        max-width: 380px;
+        padding: 20px;
+    }
+
+    .app-name {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 3rem;
+    }
+
+    .auth-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-subtitle {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        height: 48px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+    }
+
+    .btn-dark {
+        background-color: #000;
+        color: #fff;
+        height: 48px;
+        width: 100%;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-google {
+        background-color: #f8f9fa;
+        color: #212529;
+        height: 48px;
+        width: 100%;
+        border-radius: 8px;
+        font-weight: 600;
+        border: 1px solid #ced4da;
+    }
+
+        .btn-google img {
+            height: 20px;
+            margin-right: 10px;
+        }
+
+    .divider {
+        color: #6c757d;
+        margin: 1.5rem 0;
+        font-size: 0.9rem;
+    }
+
+    .terms {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin-top: 1.5rem;
+    }
+
+        .terms a {
+            color: #212529;
+            text-decoration: underline;
+        }
+</style>
+
+<div class="auth-container">
+    <div class="auth-box">
+        <h1 class="app-name">Clínica Bem-Estar</h1>
+
+        <h2 class="auth-title">Abra uma conta</h2>
+        <p class="auth-subtitle">Digite seu e-mail para se inscrever neste site</p>
+
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <input type="email" name="email" class="form-control" placeholder="email@dominio.com" value="@Model" required />
+            </div>
+
+            <button type="submit" class="btn btn-dark">Cadastre-se com e-mail</button>
+        </form>
+
+        <div class="divider">ou continue com</div>
+
+        <button class="btn btn-google d-flex align-items-center justify-content-center">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" />
+            Google
+        </button>
+
+        <p class="terms">
+            Ao continuar, você concorda com os nossos <a href="#">Termos de Serviço</a> e <a href="#">Política de Privacidade</a>.
+        </p>
+    </div>
+</div>
