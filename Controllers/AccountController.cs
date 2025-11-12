@@ -73,7 +73,7 @@ namespace ClinicaBemEstar.Controllers
                 await SignInUser(user);
                 return RedirectToAction("Index", "Home");
             }
-            // Se modelo inválido, retornar à view com erros
+
             return View("RegisterDetails", user);
         }
 
@@ -91,14 +91,12 @@ namespace ClinicaBemEstar.Controllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-            // 10. Checar se o usuário existe e a senha está correta
             if (user == null || _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Success)
             {
                 TempData["ErrorMessage"] = "Email ou senha inválidos.";
                 return View();
             }
 
-            // Se usuário válido, faça login
             await SignInUser(user);
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
